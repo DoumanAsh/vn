@@ -5,6 +5,9 @@ extern crate lazy_panic;
 extern crate rand;
 
 #[macro_use]
+extern crate log;
+
+#[macro_use]
 mod utils;
 mod rt;
 mod random;

@@ -94,7 +94,7 @@ impl<'a, 'b> amethyst::State<GameData<'a, 'b>, amethyst::StateEvent> for Menu {
         }
     }
 
-    fn handle_event(&mut self, data: amethyst::StateData<GameData>, event: amethyst::StateEvent) -> amethyst::Trans<GameData<'a, 'b>, amethyst::StateEvent> {
+    fn handle_event(&mut self, _data: amethyst::StateData<GameData>, event: amethyst::StateEvent) -> amethyst::Trans<GameData<'a, 'b>, amethyst::StateEvent> {
         match event {
             amethyst::StateEvent::Window(event) => if amethyst::input::is_close_requested(&event) {
                 amethyst::Trans::Quit
@@ -111,6 +111,7 @@ impl<'a, 'b> amethyst::State<GameData<'a, 'b>, amethyst::StateEvent> for Menu {
                     if event.target == ui.exit_game_btn {
                         amethyst::Trans::Quit
                     } else {
+                        info!("Click by {:?}", event.target);
                         //TODO: we actually get two click events?
                         amethyst::Trans::None
                     }

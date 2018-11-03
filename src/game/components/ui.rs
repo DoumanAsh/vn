@@ -68,15 +68,25 @@ impl Resources {
 }
 
 ///Creates common UiButtonBuilder
-fn menu_button(name: &str, text: &str, resources: &Resources) -> amethyst::ui::UiButtonBuilder {
+fn menu_button(name: &str, text: &str, resources: &Resources, size: (f32, f32)) -> amethyst::ui::UiButtonBuilder {
     amethyst::ui::UiButtonBuilder::new(name, text).with_font(resources.font.clone())
                                                   .with_image(resources.background.menu_button.clone())
                                                   .with_hover_image(resources.background.menu_button_hover.clone())
                                                   .with_press_image(resources.background.menu_button_clicked.clone())
                                                   .with_anchor(amethyst::ui::Anchor::Middle)
-                                                  .with_size(200.0, 100.0)
+                                                  .with_size(size.0, size.1)
                                                   .with_layer(5.0)
                                                   .with_font_size(20.0)
+}
+
+fn get_button_size(dimensions: (f32, f32)) -> (f32, f32) {
+    (dimensions.0 * 0.2, 100.0)
+}
+
+fn resize_button(transform: &mut amethyst::ui::UiTransform, dimensions: (f32, f32)) {
+    let new_dimensions = get_button_size(dimensions);
+    transform.width = new_dimensions.0;
+    transform.height = new_dimensions.1;
 }
 
 pub struct Menu {
@@ -105,10 +115,20 @@ impl Menu {
                               .with(background)
                               .build();
 
-        let new_game_btn = menu_button("btn_new_game", "Start", resources).with_position(0.0, -100.0)
-                                                                          .build_from_world(world);
-        let exit_game_btn = menu_button("btn_exit_game", "Exit", resources).with_position(0.0, -225.0)
-                                                                           .build_from_world(world);
+        let screen_dimensions = {
+            let screen_dimensions = world.read_resource::<amethyst::renderer::ScreenDimensions>();
+            (screen_dimensions.width(), screen_dimensions.height())
+        };
+
+        let screen_dimensions = get_button_size(screen_dimensions);
+
+        let new_game_btn = menu_button("btn_new_game", "Start", resources, screen_dimensions).with_position(0.0, -100.0)
+                                                                                             .build_from_world(world);
+        let exit_game_btn = menu_button("btn_exit_game", "Exit", resources, screen_dimensions).with_position(0.0, -225.0)
+                                                                                              .build_from_world(world);
+
+        world.write_storage::<amethyst::ui::UiResize>().insert(new_game_btn, amethyst::ui::UiResize::new(resize_button)).expect("To add UiResize");
+        world.write_storage::<amethyst::ui::UiResize>().insert(exit_game_btn, amethyst::ui::UiResize::new(resize_button)).expect("To add UiResize");
 
 
         Self {
