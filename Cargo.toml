@@ -1,0 +1,22 @@
+[package]
+name = "vn"
+version = "0.1.0"
+authors = ["Douman <douman@gmx.se>"]
+
+[dependencies]
+amethyst = "0.9"
+cute-log = "1"
+rand = "0.5"
+
+[dependencies.lazy-panic]
+version = "0.3"
+features = ["backtrace-on"]
+
+[dependencies.log]
+version = "0"
+default-features = false
+features = ["max_level_debug", "release_max_level_warn"]
+
+[profile.dev]
+opt-level = 2
+debug-assertions = true
