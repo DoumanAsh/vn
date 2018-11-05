@@ -19,13 +19,13 @@ impl<'a, 'b> DispatcherSelector<GameDataBuilder<'a, 'b>, DispatcherBuilder<'a, '
     }
 }
 
-pub struct Running;
-impl<'a, 'b> DispatcherSelector<GameData<'a, 'b>, Dispatcher<'a, 'b>> for Running {
+pub struct Adv;
+impl<'a, 'b> DispatcherSelector<GameData<'a, 'b>, Dispatcher<'a, 'b>> for Adv {
     fn select<'c>(builder: &'c mut GameData<'a, 'b>) -> &'c mut Dispatcher<'a, 'b> {
         &mut builder.basic
     }
 }
-impl<'a, 'b> DispatcherSelector<GameDataBuilder<'a, 'b>, DispatcherBuilder<'a, 'b>> for Running {
+impl<'a, 'b> DispatcherSelector<GameDataBuilder<'a, 'b>, DispatcherBuilder<'a, 'b>> for Adv {
     fn select<'c>(builder: &'c mut GameDataBuilder<'a, 'b>) -> &'c mut DispatcherBuilder<'a, 'b> {
         &mut builder.basic
     }
@@ -33,11 +33,11 @@ impl<'a, 'b> DispatcherSelector<GameDataBuilder<'a, 'b>, DispatcherBuilder<'a, '
 
 pub struct GameData<'a, 'b> {
     basic: Dispatcher<'a, 'b>,
-    running: Dispatcher<'a, 'b>,
+    adv: Dispatcher<'a, 'b>,
 }
 
 impl<'a, 'b> GameData<'a, 'b> {
-    pub fn update<D: DispatcherSelector<Self, Dispatcher<'a, 'b>>>(&mut self, res: &Resources) {
+    pub fn update<D: DispatcherSelector<Self, Dispatcher<'a, 'b>>>(&mut self, _: D, res: &Resources) {
         D::select(self).dispatch(res)
     }
 }
@@ -45,16 +45,16 @@ impl<'a, 'b> GameData<'a, 'b> {
 #[derive(Default)]
 pub struct GameDataBuilder<'a, 'b> {
     basic: DispatcherBuilder<'a, 'b>,
-    running: DispatcherBuilder<'a, 'b>,
+    adv: DispatcherBuilder<'a, 'b>,
 }
 
 impl<'a, 'b> GameDataBuilder<'a, 'b> {
-    pub fn with_bundle<D: DispatcherSelector<Self, DispatcherBuilder<'a, 'b>>, B: SystemBundle<'a, 'b>>(mut self, bundle: B) -> amethyst::core::bundle::Result<Self> {
+    pub fn with_bundle<D: DispatcherSelector<Self, DispatcherBuilder<'a, 'b>>, B: SystemBundle<'a, 'b>>(mut self, _: D, bundle: B) -> amethyst::core::bundle::Result<Self> {
         bundle.build(D::select(&mut self))?;
         Ok(self)
     }
 
-    pub fn with<D: DispatcherSelector<Self, DispatcherBuilder<'a, 'b>>, S>(mut self, system: S, name: &str, deps: &[&str]) -> Self where for<'c> S: System<'c> + Send + 'a {
+    pub fn with<D: DispatcherSelector<Self, DispatcherBuilder<'a, 'b>>, S>(mut self, _: D, system: S, name: &str, deps: &[&str]) -> Self where for<'c> S: System<'c> + Send + 'a {
         D::select(&mut self).add(system, name, deps);
         self
     }
@@ -65,13 +65,13 @@ impl<'a, 'b> amethyst::DataInit<GameData<'a, 'b>> for GameDataBuilder<'a, 'b> {
         let pool = world.read_resource::<amethyst::core::ArcThreadPool>().clone();
 
         let mut basic = self.basic.with_pool(pool.clone()).build();
-        let mut running = self.running.with_pool(pool.clone()).build();
+        let mut adv = self.adv.with_pool(pool.clone()).build();
         basic.setup(&mut world.res);
-        running.setup(&mut world.res);
+        adv.setup(&mut world.res);
 
         GameData {
             basic,
-            running,
+            adv,
         }
     }
 }
@@ -122,7 +122,7 @@ impl<'a, 'b> amethyst::State<GameData<'a, 'b>, amethyst::StateEvent> for Menu {
     }
 
     fn update(&mut self, state: amethyst::StateData<GameData>) -> amethyst::Trans<GameData<'a, 'b>, amethyst::StateEvent> {
-        state.data.update::<Base>(&state.world.res);
+        state.data.update(Base, &state.world.res);
         amethyst::Trans::None
     }
 }
@@ -146,8 +146,8 @@ impl<'a, 'b> amethyst::State<GameData<'a, 'b>, amethyst::StateEvent> for Game {
     }
 
     fn update(&mut self, state: amethyst::StateData<GameData>) -> amethyst::Trans<GameData<'a, 'b>, amethyst::StateEvent> {
-        state.data.update::<Base>(&state.world.res);
-        state.data.update::<Running>(&state.world.res);
+        state.data.update(Base, &state.world.res);
+        state.data.update(Adv, &state.world.res);
         amethyst::Trans::None
     }
 }
