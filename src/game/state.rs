@@ -2,6 +2,9 @@ use amethyst::ecs::prelude::{Dispatcher, DispatcherBuilder, Resources, System};
 use amethyst::core::bundle::SystemBundle;
 
 use game::components;
+use game::components::ui::UiComponent;
+
+use std::time;
 
 pub trait DispatcherSelector<Arg, Res> {
     fn select<'c>(builder: &'c mut Arg) -> &'c mut Res;
@@ -22,12 +25,12 @@ impl<'a, 'b> DispatcherSelector<GameDataBuilder<'a, 'b>, DispatcherBuilder<'a, '
 pub struct Adv;
 impl<'a, 'b> DispatcherSelector<GameData<'a, 'b>, Dispatcher<'a, 'b>> for Adv {
     fn select<'c>(builder: &'c mut GameData<'a, 'b>) -> &'c mut Dispatcher<'a, 'b> {
-        &mut builder.basic
+        &mut builder.adv
     }
 }
 impl<'a, 'b> DispatcherSelector<GameDataBuilder<'a, 'b>, DispatcherBuilder<'a, 'b>> for Adv {
     fn select<'c>(builder: &'c mut GameDataBuilder<'a, 'b>) -> &'c mut DispatcherBuilder<'a, 'b> {
-        &mut builder.basic
+        &mut builder.adv
     }
 }
 
@@ -108,11 +111,14 @@ impl<'a, 'b> amethyst::State<GameData<'a, 'b>, amethyst::StateEvent> for Menu {
                         None => unreach!()
                     };
 
+                    //TODO: we actually get two click events?
+                    info!("Click by {:?}", event.target);
+
                     if event.target == ui.exit_game_btn {
                         amethyst::Trans::Quit
+                    } else if event.target == ui.new_game_btn {
+                        amethyst::Trans::Switch(Box::new(Game::default()))
                     } else {
-                        info!("Click by {:?}", event.target);
-                        //TODO: we actually get two click events?
                         amethyst::Trans::None
                     }
                 },
@@ -127,21 +133,73 @@ impl<'a, 'b> amethyst::State<GameData<'a, 'b>, amethyst::StateEvent> for Menu {
     }
 }
 
-pub struct Game;
+const CLICK_BOUNCE_TIMEOUT: time::Duration = time::Duration::from_secs(1);
 
-impl<'a, 'b> amethyst::State<GameData<'a, 'b>, amethyst::StateEvent> for Game {
-    fn on_start(&mut self, _data: amethyst::StateData<GameData>) {
+pub struct Game {
+    ui: Option<components::ui::Adv>,
+    last_click_inst: time::Instant,
+}
+
+impl Default for Game {
+    fn default() -> Self {
+        Self {
+            ui: None,
+            last_click_inst: time::Instant::now(),
+        }
+    }
+}
+
+impl Game {
+    pub fn is_close_click_bounced(&mut self) -> bool {
+        let now = time::Instant::now();
+        let duration = now.duration_since(self.last_click_inst);
+        self.last_click_inst = now;
+
+        CLICK_BOUNCE_TIMEOUT >= duration
     }
 
-    fn handle_event(&mut self, _: amethyst::StateData<GameData>, event: amethyst::StateEvent) -> amethyst::Trans<GameData<'a, 'b>, amethyst::StateEvent> {
+    pub fn ui_mut(&mut self) -> &mut components::ui::Adv {
+        match self.ui.as_mut() {
+            Some(ui) => ui,
+            None => unreach!()
+        }
+    }
+}
+
+impl<'a, 'b> amethyst::State<GameData<'a, 'b>, amethyst::StateEvent> for Game {
+    fn on_start(&mut self, mut data: amethyst::StateData<GameData>) {
+        let res = components::ui::Resources::fetch(&mut data.world);
+        self.ui = Some(components::ui::Adv::new(&mut data.world, &res));
+    }
+
+    fn on_stop(&mut self, mut data: amethyst::StateData<GameData>) {
+        match self.ui.take() {
+            Some(ui) => ui.destroy(&mut data.world),
+            None => unreach!()
+        }
+    }
+
+    fn handle_event(&mut self, mut data: amethyst::StateData<GameData>, event: amethyst::StateEvent) -> amethyst::Trans<GameData<'a, 'b>, amethyst::StateEvent> {
         match event {
             amethyst::StateEvent::Window(event) => if amethyst::input::is_close_requested(&event) {
                 amethyst::Trans::Quit
+            } else if amethyst::input::is_key_down(&event, amethyst::renderer::VirtualKeyCode::Space) {
+                self.ui_mut().text.toggle_hide(&mut data.world);
+                amethyst::Trans::None
             } else {
                 amethyst::Trans::None
             },
-            _ => amethyst::Trans::None
+            amethyst::StateEvent::Ui(event) => match event.event_type {
+                amethyst::ui::UiEventType::Click => {
+                    if event.target == self.ui_mut().text.close && !self.is_close_click_bounced() {
+                        info!("Close text window!");
+                        self.ui_mut().text.toggle_hide(&mut data.world);
+                    }
 
+                    amethyst::Trans::None
+                },
+                _ => amethyst::Trans::None
+            }
         }
     }
 

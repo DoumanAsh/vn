@@ -3,6 +3,7 @@
 extern crate amethyst;
 extern crate lazy_panic;
 extern crate rand;
+extern crate specs;
 
 #[macro_use]
 extern crate log;

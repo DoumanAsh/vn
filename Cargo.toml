@@ -4,12 +4,16 @@ version = "0.1.0"
 authors = ["Douman <douman@gmx.se>"]
 
 [dependencies]
-amethyst = "0.9"
 cute-log = "1"
 rand = "0.5"
+specs = "^0.12.3"
+
+[dependencies.amethyst]
+version = "0.9"
+features = ["nightly"]
 
 [dependencies.lazy-panic]
-version = "0.3"
+version = "1"
 features = ["backtrace-on"]
 
 [dependencies.log]

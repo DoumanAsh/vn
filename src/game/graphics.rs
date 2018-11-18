@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 /// Converts a vector of vertices into a mesh.
 pub fn create_mesh(world: &amethyst::prelude::World, vertices: Vec<amethyst::renderer::PosTex>) -> amethyst::renderer::MeshHandle {
     let loader = world.read_resource::<amethyst::assets::Loader>();
