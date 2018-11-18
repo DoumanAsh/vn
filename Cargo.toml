@@ -10,7 +10,6 @@ specs = "^0.12.3"
 
 [dependencies.amethyst]
 version = "0.9"
-features = ["nightly"]
 
 [dependencies.lazy-panic]
 version = "1"

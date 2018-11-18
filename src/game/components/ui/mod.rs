@@ -169,9 +169,13 @@ impl TextWindow {
         match world.write_storage::<amethyst::renderer::HiddenPropagate>().entry(self.window).expect("To get hidden component") {
             specs::storage::StorageEntry::Occupied(occupied) => {
                 occupied.remove();
+                world.write_storage::<amethyst::ui::MouseReactive>()
+                     .insert(self.close, amethyst::ui::MouseReactive)
+                     .expect("Add MouseReactive to close button");
             },
             specs::storage::StorageEntry::Vacant(vacant) => {
                 vacant.insert(amethyst::renderer::HiddenPropagate::default());
+                world.write_storage::<amethyst::ui::MouseReactive>().remove(self.close);
             },
         }
     }
