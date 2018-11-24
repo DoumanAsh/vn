@@ -1,6 +1,52 @@
 #![allow(unused)]
 
+use amethyst::prelude::{World};
 use amethyst::core::nalgebra::Matrix;
+
+use std::path;
+
+pub trait TextureLoader {
+    fn load_file<F: amethyst::assets::Format<amethyst::renderer::Texture>>(path: &str, format: F, world: &World) -> amethyst::renderer::TextureHandle {
+        let loader = world.read_resource::<amethyst::assets::Loader>();
+        loader.load(path, amethyst::renderer::PngFormat, amethyst::renderer::TextureMetadata::srgb(), (), &world.read_resource())
+    }
+
+    fn load_sprite_sheet(path: &str, texture: amethyst::renderer::TextureHandle, world: &World) -> amethyst::renderer::SpriteSheetHandle {
+        let mut path_buf = path::Path::new(path).to_path_buf();
+        path_buf.set_extension("ron");
+        let path = match path_buf.to_str() {
+            Some(path) => path,
+            None => unreach!(),
+        };
+
+        let loader = world.read_resource::<amethyst::assets::Loader>();
+        loader.load(path, amethyst::renderer::SpriteSheetFormat, texture, (), &world.read_resource())
+    }
+
+    fn load(self, world: &World) -> amethyst::renderer::SpriteSheetHandle;
+}
+
+pub enum Sprite {
+    Path(&'static str)
+}
+
+impl TextureLoader for Sprite {
+    fn load(self, world: &World) -> amethyst::renderer::SpriteSheetHandle {
+        match self {
+            Sprite::Path(path) => {
+                let texture = if path.ends_with(".png") {
+                    Self::load_file(path, amethyst::renderer::PngFormat, world)
+                } else if path.ends_with(".jpg") || path.ends_with(".jpeg") {
+                    Self::load_file(path, amethyst::renderer::JpgFormat, world)
+                } else {
+                    panic!("Unknown sprite format")
+                };
+
+                Self::load_sprite_sheet(path, texture, world)
+            }
+        }
+    }
+}
 
 /// Converts a vector of vertices into a mesh.
 pub fn create_mesh(world: &amethyst::prelude::World, vertices: Vec<amethyst::renderer::PosTex>) -> amethyst::renderer::MeshHandle {

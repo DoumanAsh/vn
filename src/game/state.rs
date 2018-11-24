@@ -170,6 +170,11 @@ impl<'a, 'b> amethyst::State<GameData<'a, 'b>, amethyst::StateEvent> for Game {
     fn on_start(&mut self, mut data: amethyst::StateData<GameData>) {
         let res = components::ui::Resources::fetch(&mut data.world);
         self.ui = Some(components::ui::Adv::new(&mut data.world, &res));
+
+        let sprites = components::sprites::Sprites::fetch(&mut data.world);
+        sprites.demo(&mut data.world);
+
+        let _camera = components::camera::Camera::new(&mut data.world);
     }
 
     fn on_stop(&mut self, mut data: amethyst::StateData<GameData>) {
