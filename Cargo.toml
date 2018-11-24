@@ -6,10 +6,10 @@ authors = ["Douman <douman@gmx.se>"]
 [dependencies]
 cute-log = "1"
 rand = "0.5"
-specs = "^0.12.3"
 
 [dependencies.amethyst]
-version = "0.9"
+path = "../amethyst/amethyst/"
+#version = "0.9"
 
 [dependencies.lazy-panic]
 version = "1"

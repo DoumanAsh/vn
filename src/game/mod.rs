@@ -6,7 +6,7 @@ mod state;
 use self::state::{GameDataBuilder, Base, Adv};
 
 pub fn run() -> amethyst::Result<()> {
-    let sprite_pass = amethyst::renderer::DrawSprite::new().with_transparency(amethyst::renderer::ColorMask::all(), amethyst::renderer::ALPHA, None);
+    let sprite_pass = amethyst::renderer::DrawFlat2D::new().with_transparency(amethyst::renderer::ColorMask::all(), amethyst::renderer::ALPHA, None);
     //Clear screen with black
     //clear_target takes RGB colour
     let pipe = amethyst::renderer::Stage::with_backbuffer().clear_target([0.0, 0.0, 0.0, 1.0], 1.0)

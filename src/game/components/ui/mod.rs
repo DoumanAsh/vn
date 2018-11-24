@@ -1,87 +1,10 @@
 use amethyst::prelude::{Builder, World};
-use amethyst::assets::SimpleFormat;
+use amethyst::ecs as specs;
 
-mod background;
+mod res;
 mod builder;
 
-const FONT: &'static [u8] = include_bytes!("../../../../assets/fonts/georgia.ttf");
-
-#[derive(Clone)]
-struct AdvUi {
-    pub text_background: amethyst::renderer::TextureHandle,
-    pub close_background: amethyst::renderer::TextureHandle,
-}
-
-impl AdvUi {
-    fn new(world: &mut World) -> Self {
-        let text_background = world.read_resource::<amethyst::assets::Loader>().load_from_data(background::TEXT_WINDOW.into(), (), &world.read_resource());
-        let close_background = world.read_resource::<amethyst::assets::Loader>().load_from_data(background::BLACK_BUTTON.into(), (), &world.read_resource());
-
-        Self {
-            text_background,
-            close_background,
-        }
-    }
-}
-
-#[derive(Clone)]
-struct Background {
-    pub menu_button: amethyst::renderer::TextureHandle,
-    pub menu_button_hover: amethyst::renderer::TextureHandle,
-    pub menu_button_clicked: amethyst::renderer::TextureHandle,
-    pub menu: amethyst::renderer::TextureHandle
-}
-
-impl Background {
-    fn new(world: &mut World) -> Self {
-        let menu_button = world.read_resource::<amethyst::assets::Loader>().load_from_data(background::DARK_BUTTON.into(), (), &world.read_resource());
-        let menu_button_hover = world.read_resource::<amethyst::assets::Loader>().load_from_data(background::DARK_BUTTON_HOVER.into(), (), &world.read_resource());
-        let menu_button_clicked = world.read_resource::<amethyst::assets::Loader>().load_from_data(background::DARK_BUTTON_CLICK.into(), (), &world.read_resource());
-        let menu = amethyst::renderer::PngFormat.import(background::MENU_IMG.to_owned(), amethyst::renderer::TextureMetadata::srgb()).expect("To import builtin image");
-        let menu = world.read_resource::<amethyst::assets::Loader>().load_from_data(menu, (), &world.read_resource());
-
-        Self {
-            menu_button,
-            menu_button_hover,
-            menu_button_clicked,
-            menu,
-        }
-    }
-}
-
-#[derive(Clone)]
-///Resources for UI
-pub struct Resources {
-    adv: AdvUi,
-    background: Background,
-    font: amethyst::ui::FontHandle,
-}
-
-impl Resources {
-    fn new(world: &mut World) -> Self {
-        let font = amethyst::ui::TtfFormat.import(FONT.to_owned(), ()).expect("To import builtin font");
-        let font = world.read_resource::<amethyst::assets::Loader>().load_from_data(font, (), &world.read_resource());
-
-        Self {
-            adv: AdvUi::new(world),
-            background: Background::new(world),
-            font,
-        }
-    }
-
-    pub fn create(world: &mut World) {
-        if !world.res.has_value::<Self>() {
-            let res = Self::new(world);
-            world.add_resource(res);
-        }
-    }
-
-    pub fn fetch(world: &mut World) -> Self {
-        Self::create(world);
-
-        world.read_resource::<Self>().clone()
-    }
-}
+pub use self::res::Resources;
 
 ///Describes UI component interfaces
 pub trait UiComponent {
