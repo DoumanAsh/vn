@@ -2,6 +2,7 @@ mod config;
 mod graphics;
 mod components;
 mod state;
+mod systems;
 
 const ASSETS_DIR: &'static str = "./";
 
@@ -23,6 +24,7 @@ pub fn run() -> amethyst::Result<()> {
                                               .with_bundle(Base, amethyst::input::InputBundle::<String, String>::new()).expect("To add bundle")
                                               .with_bundle(Base, amethyst::ui::UiBundle::<String, String>::new()).expect("To add bundle")
                                               .with(Base, amethyst::ui::UiMouseSystem::<String, String>::new(), "ui_mouse", &[])
+                                              .with(Adv, systems::Demo::default(), systems::demo::NAME, &[])
                                               .with(Adv, amethyst::renderer::HideHierarchySystem::default(), "hide_hier", &[]);
 
     amethyst::Application::build(ASSETS_DIR, state::Menu::default()).expect("Create application builder")
