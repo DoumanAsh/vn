@@ -8,8 +8,7 @@ cute-log = "1"
 rand = "0.5"
 
 [dependencies.amethyst]
-path = "../amethyst/amethyst/"
-#version = "0.9"
+version = "0.10"
 
 [dependencies.lazy-panic]
 version = "1"
