@@ -1,6 +1,6 @@
 use amethyst::prelude::{Builder, World};
 
-use ::utils::AssignOptionIf;
+use crate::utils::AssignOptionIf;
 
 ///Creates common UiButtonBuilder
 pub fn menu_button(name: &str, text: &str, resources: &super::Resources, size: (f32, f32)) -> amethyst::ui::UiButtonBuilder {

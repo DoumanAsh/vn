@@ -2,6 +2,7 @@
 name = "vn"
 version = "0.1.0"
 authors = ["Douman <douman@gmx.se>"]
+edition = "2018"
 
 [dependencies]
 cute-log = "1"

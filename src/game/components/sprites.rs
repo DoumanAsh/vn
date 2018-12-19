@@ -2,7 +2,7 @@ use amethyst::prelude::{Builder, World};
 use amethyst::renderer::SpriteSheetHandle;
 
 use super::camera;
-use game::graphics::{Sprite, TextureLoader};
+use crate::game::graphics::{Sprite, TextureLoader};
 
 #[derive(Clone)]
 pub struct Sprites {

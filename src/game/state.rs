@@ -1,8 +1,8 @@
 use amethyst::ecs::prelude::{Dispatcher, DispatcherBuilder, Resources, System};
 use amethyst::core::bundle::SystemBundle;
 
-use game::components;
-use game::components::ui::UiComponent;
+use crate::game::components;
+use crate::game::components::ui::UiComponent;
 
 use std::time;
 
